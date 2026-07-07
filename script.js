@@ -705,8 +705,10 @@ function initAnimations() {
     /* dock slides up once the page is ready */
     gsap.from(".dock", { y: 110, autoAlpha: 0, duration: 1, ease: "power4.out", delay: 0.3 });
 
-    /* the little record never stops spinning — and speeds up as you scroll */
+    /* the little record never stops spinning — and speeds up as you scroll;
+       the neon YOLO burns brighter with scroll speed, then settles to an ember */
     const discSpin = gsap.to(".dock__disc-vinyl", { rotation: 360, duration: 4, ease: "none", repeat: -1 });
+    const neonGlow = document.querySelector(".hero__neon-glow");
     ScrollTrigger.create({
       start: 0,
       end: "max",
@@ -714,6 +716,10 @@ function initAnimations() {
         const v = gsap.utils.clamp(0, 5, Math.abs(self.getVelocity()) / 500);
         discSpin.timeScale(1 + v);
         gsap.to(discSpin, { timeScale: 1, duration: 0.8, overwrite: true });
+        if (neonGlow) {
+          gsap.set(neonGlow, { opacity: 0.35 + (v / 5) * 0.65 });
+          gsap.to(neonGlow, { opacity: 0.35, duration: 1.4, ease: "power2.out", overwrite: true });
+        }
       },
     });
   }

@@ -11,6 +11,7 @@
   --black-soft: #1b1614;
   --gold: #f5c21b;          /* logo yellow */
   --gold-deep: #d9a90f;
+  --neon: #ff3b30;          /* neon sign red */
   --cream: #f8efdd;
   --cream-soft: rgba(248, 239, 221, 0.66);
   --line: rgba(248, 239, 221, 0.16);
@@ -418,9 +419,10 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* dark room with a faint red wash from the sign */
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(245, 194, 27, 0.07), transparent 55%),
-    var(--maroon);
+    radial-gradient(90% 70% at 28% 38%, rgba(255, 59, 48, 0.09), transparent 60%),
+    var(--black);
 }
 .hero__bg-word {
   position: absolute;
@@ -517,6 +519,62 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
   color: var(--gold);
   letter-spacing: 0;
   margin-left: 0.06em;
+}
+
+/* Neon sign headline */
+.hero__title--neon { line-height: 0.9; }
+.hero__neon {
+  position: relative;
+  display: inline-block;
+  font-size: clamp(6.5rem, 23vw, 20rem);
+  line-height: 0.95;
+}
+.hero__neon-base {
+  position: relative;
+  z-index: 2;
+  display: block;
+  color: var(--neon);
+  letter-spacing: 0.01em;
+  text-shadow:
+    0 0 6px rgba(255, 59, 48, 0.65),
+    0 0 22px rgba(255, 59, 48, 0.4),
+    0 0 70px rgba(230, 30, 20, 0.3);
+}
+.hero__neon-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  color: var(--neon);
+  filter: blur(16px);
+  opacity: 0.35;
+  pointer-events: none;
+  user-select: none;
+}
+.hero__subline {
+  display: block;
+  margin-top: clamp(0.8rem, 2vw, 1.4rem);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.3rem, 2.6vw, 2rem);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--cream);
+}
+
+/* Red rim-light on the collage so it sits in the dark room */
+.hero .hero-card__inner {
+  border-color: rgba(255, 59, 48, 0.26);
+  box-shadow:
+    0 30px 60px -25px rgba(0, 0, 0, 0.85),
+    0 0 34px -8px rgba(255, 59, 48, 0.3);
+}
+.hero__vinyl.vinyl {
+  box-shadow:
+    0 24px 60px -20px rgba(0, 0, 0, 0.75),
+    0 0 70px -12px rgba(255, 59, 48, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 .hero__lede {
   font-size: clamp(1.05rem, 1.5vw, 1.3rem);
@@ -1174,7 +1232,7 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
 
 /* ── Responsive ─────────────────────────────────────── */
 @media (max-width: 899px) {
-  .hero__head { max-width: none; }
+  .hero__head { max-width: none; order: 1; }
   .hero__stage {
     position: relative;
     top: auto;
@@ -1182,7 +1240,9 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
     transform: none;
     width: min(100%, 420px);
     margin: 2.5rem auto 0;
+    order: 2;
   }
+  .hero__foot { order: 3; }
   .hero__foot p:last-child { display: none; }
 
   .stats__grid { grid-template-columns: repeat(2, 1fr); }
