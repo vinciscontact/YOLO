@@ -11,7 +11,8 @@
   --black-soft: #1b1614;
   --gold: #f5c21b;          /* logo yellow */
   --gold-deep: #d9a90f;
-  --neon: #ff3b30;          /* neon sign red */
+  --neon: #a8231c;          /* glowing maroon — hero sign */
+  --maroon-pale: #d8aca5;   /* readable maroon tint for hero copy */
   --cream: #f8efdd;
   --cream-soft: rgba(248, 239, 221, 0.66);
   --line: rgba(248, 239, 221, 0.16);
@@ -419,90 +420,54 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* dark room with a faint red wash from the sign */
+  /* pure noir: black room, faint maroon halo behind the sign */
   background:
-    radial-gradient(90% 70% at 28% 38%, rgba(255, 59, 48, 0.09), transparent 60%),
+    radial-gradient(58% 44% at 50% 46%, rgba(109, 20, 20, 0.28), transparent 68%),
     var(--black);
 }
-.hero__bg-word {
-  position: absolute;
-  top: 42%; left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: var(--font-display);
-  font-size: clamp(20rem, 55vw, 48rem);
-  line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(248, 239, 221, 0.07);
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-  white-space: nowrap;
-}
-/* Floating collage stage — vinyl half off-screen right, cards drift around it */
+/* Centered backdrop stage — the record turns behind the sign */
 .hero__stage {
   position: absolute;
-  top: 50%;
-  right: -12vw;
-  transform: translateY(-50%);
-  width: clamp(340px, 46vw, 760px);
-  aspect-ratio: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
   z-index: 1;
   pointer-events: none;
 }
 .hero__vinyl {
-  position: absolute;
-  right: 0;
-  top: 11%;
-  width: 78%;
+  width: min(64vh, 78vw, 720px);
   will-change: transform;
+  opacity: 0.9;
 }
+.hero__vinyl .vinyl__label { background: var(--maroon); }
 .hero__vinyl .vinyl__label span {
   font-size: clamp(0.8rem, 1.4vw, 1.2rem);
   transform: translateY(-150%);
+  color: var(--black);
 }
-.hero-card {
-  position: absolute;
-  width: clamp(120px, 13vw, 200px);
-  will-change: transform;
-}
-.hero-card__inner {
-  background: var(--black-soft);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 0.45rem 0.45rem 0.6rem;
-  box-shadow: 0 30px 60px -25px rgba(0, 0, 0, 0.65);
-}
-.hero-card__inner img {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  border-radius: 8px;
-}
-.hero-card__inner figcaption {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 0.85rem;
-  color: var(--gold);
-  padding-top: 0.45rem;
+
+.hero__head {
+  position: relative;
+  z-index: 2;
+  margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
-.hero-card--1 { left: 0; top: 8%; transform: rotate(-7deg); }
-.hero-card--2 { left: 14%; bottom: 2%; transform: rotate(4deg); }
-.hero-card--3 { right: 34%; top: -4%; transform: rotate(8deg); }
-
-.hero__head { position: relative; z-index: 2; max-width: min(60rem, 68vw); }
 .hero__eyebrow {
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.22em;
-  color: var(--cream-soft);
+  color: var(--maroon-pale);
   margin-bottom: clamp(1rem, 2vw, 1.8rem);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.6rem;
 }
-.hero__eyebrow .gold-dot { font-size: 0.55rem; }
+.hero__eyebrow .gold-dot { font-size: 0.55rem; color: var(--neon); }
 .hero__title {
   font-family: var(--font-display);
   font-weight: 400;
@@ -521,24 +486,24 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
   margin-left: 0.06em;
 }
 
-/* Neon sign headline */
+/* Glowing maroon sign — fills the page */
 .hero__title--neon { line-height: 0.9; }
 .hero__neon {
   position: relative;
   display: inline-block;
-  font-size: clamp(6.5rem, 23vw, 20rem);
-  line-height: 0.95;
+  font-size: clamp(7rem, 34vw, 38rem);
+  line-height: 0.88;
 }
 .hero__neon-base {
   position: relative;
   z-index: 2;
   display: block;
   color: var(--neon);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.015em;
   text-shadow:
-    0 0 6px rgba(255, 59, 48, 0.65),
-    0 0 22px rgba(255, 59, 48, 0.4),
-    0 0 70px rgba(230, 30, 20, 0.3);
+    0 0 10px rgba(168, 35, 28, 0.7),
+    0 0 34px rgba(140, 26, 21, 0.5),
+    0 0 100px rgba(109, 20, 20, 0.45);
 }
 .hero__neon-glow {
   position: absolute;
@@ -546,44 +511,43 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
   z-index: 1;
   display: block;
   color: var(--neon);
-  filter: blur(16px);
-  opacity: 0.35;
+  filter: blur(20px);
+  opacity: 0.4;
   pointer-events: none;
   user-select: none;
 }
 .hero__subline {
   display: block;
-  margin-top: clamp(0.8rem, 2vw, 1.4rem);
+  margin-top: clamp(0.8rem, 2vw, 1.6rem);
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
-  font-size: clamp(1.3rem, 2.6vw, 2rem);
+  font-size: clamp(1.3rem, 2.6vw, 2.1rem);
   letter-spacing: 0.02em;
   text-transform: none;
-  color: var(--cream);
+  color: var(--maroon-pale);
 }
+.hero__subline .gold-dot { color: var(--neon); }
 
-/* Red rim-light on the collage so it sits in the dark room */
-.hero .hero-card__inner {
-  border-color: rgba(255, 59, 48, 0.26);
-  box-shadow:
-    0 30px 60px -25px rgba(0, 0, 0, 0.85),
-    0 0 34px -8px rgba(255, 59, 48, 0.3);
-}
+/* Two-color discipline: every hero control lives in maroon/black */
 .hero__vinyl.vinyl {
   box-shadow:
-    0 24px 60px -20px rgba(0, 0, 0, 0.75),
-    0 0 70px -12px rgba(255, 59, 48, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 24px 80px -20px rgba(0, 0, 0, 0.85),
+    0 0 90px -14px rgba(109, 20, 20, 0.55),
+    inset 0 0 0 1px rgba(168, 35, 28, 0.14);
 }
+.hero .btn--gold { background: var(--maroon); color: #f0d9d4; }
+.hero .btn--gold:hover { background: var(--neon); color: var(--black); }
+.hero .btn--ghost { border-color: rgba(168, 35, 28, 0.65); color: var(--maroon-pale); }
+.hero .btn--ghost:hover { border-color: var(--neon); }
 .hero__lede {
   font-size: clamp(1.05rem, 1.5vw, 1.3rem);
   line-height: 1.6;
-  color: var(--cream-soft);
-  margin: clamp(1.6rem, 3vh, 2.6rem) 0 2rem;
+  color: rgba(216, 172, 165, 0.82);
+  margin: clamp(1.6rem, 3vh, 2.6rem) auto 2rem;
   max-width: 34rem;
 }
-.hero__actions { display: flex; flex-wrap: wrap; gap: 0.9rem; }
+.hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.9rem; }
 
 .hero__foot {
   display: flex;
@@ -596,19 +560,21 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  color: var(--cream-soft);
+  color: rgba(216, 172, 165, 0.7);
+  position: relative;
+  z-index: 2;
 }
 .hero__scrollline {
   flex: 1;
   height: 1px;
-  background: var(--line);
+  background: rgba(168, 35, 28, 0.28);
   position: relative;
   overflow: hidden;
 }
 .hero__scrollline span {
   position: absolute;
   inset: 0;
-  background: var(--gold);
+  background: var(--neon);
   transform: translateX(-100%);
   animation: scrollline 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
@@ -1232,17 +1198,6 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
 
 /* ── Responsive ─────────────────────────────────────── */
 @media (max-width: 899px) {
-  .hero__head { max-width: none; order: 1; }
-  .hero__stage {
-    position: relative;
-    top: auto;
-    right: auto;
-    transform: none;
-    width: min(100%, 420px);
-    margin: 2.5rem auto 0;
-    order: 2;
-  }
-  .hero__foot { order: 3; }
   .hero__foot p:last-child { display: none; }
 
   .stats__grid { grid-template-columns: repeat(2, 1fr); }
@@ -1261,7 +1216,6 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
 }
 
 @media (max-width: 520px) {
-  .hero-card { width: clamp(96px, 26vw, 130px); }
   .wall { columns: 1 auto; }
   .nav__tag { display: none; }
   .dock { gap: 0.55rem; padding: 0.5rem 0.55rem; }

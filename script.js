@@ -371,25 +371,11 @@ function initAnimations() {
           onComplete: () => gsap.set(heroSplit.chars, { clearProps: "willChange" }),
         })
         .from(".hero__eyebrow", { y: 24, autoAlpha: 0, duration: 0.7 }, "-=0.9")
-        .from(".hero__vinyl", { xPercent: 45, autoAlpha: 0, duration: 1.4, ease: "power4.out" }, "-=0.9")
-        .from(".hero-card", { y: 90, autoAlpha: 0, stagger: 0.12, duration: 1 }, "-=1")
+        .from(".hero__vinyl", { scale: 0.86, autoAlpha: 0, duration: 1.6, ease: "power3.out" }, "-=1.1")
         .from(".hero__foot", { autoAlpha: 0, duration: 0.7 }, "-=0.5");
 
       /* The hero record never stops spinning */
       gsap.to(".hero__vinyl", { rotation: 360, duration: 26, ease: "none", repeat: -1 });
-
-      /* Memory cards levitate — different tempos so they feel alive, not synced */
-      gsap.utils.toArray(".hero-card__inner").forEach((inner, i) => {
-        gsap.to(inner, {
-          y: -12,
-          rotation: i % 2 ? 1.5 : -1.5,
-          duration: 2.4 + i * 0.5,
-          ease: "sine.inOut",
-          yoyo: true,
-          repeat: -1,
-          delay: i * 0.35,
-        });
-      });
 
       /* Mouse-parallax depth on the whole collage (desktop only, after entrance) */
       if (isDesktop) {
@@ -410,13 +396,6 @@ function initAnimations() {
           });
         });
       }
-
-      /* Giant outlined RUN drifts on scroll */
-      gsap.to(".hero__bg-word", {
-        yPercent: 30,
-        ease: "none",
-        scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
-      });
 
       /* ── Vinyl records spin with scroll (signature motif) ── */
       gsap.utils.toArray(".vinyl-scrollspin").forEach((disc) => {
