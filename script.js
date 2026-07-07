@@ -696,8 +696,8 @@ function initAnimations() {
         discSpin.timeScale(1 + v);
         gsap.to(discSpin, { timeScale: 1, duration: 0.8, overwrite: true });
         if (neonGlow) {
-          gsap.set(neonGlow, { opacity: 0.35 + (v / 5) * 0.65 });
-          gsap.to(neonGlow, { opacity: 0.35, duration: 1.4, ease: "power2.out", overwrite: true });
+          gsap.set(neonGlow, { opacity: 0.3 + (v / 5) * 0.7 });
+          gsap.to(neonGlow, { opacity: 0.3, duration: 1.4, ease: "power2.out", overwrite: true });
         }
       },
     });

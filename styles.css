@@ -500,10 +500,10 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
   display: block;
   color: var(--neon);
   letter-spacing: 0.015em;
+  /* wide halos only — no tight shadow, so the glyph edge stays razor sharp */
   text-shadow:
-    0 0 10px rgba(168, 35, 28, 0.7),
-    0 0 34px rgba(140, 26, 21, 0.5),
-    0 0 100px rgba(109, 20, 20, 0.45);
+    0 0 55px rgba(140, 26, 21, 0.45),
+    0 0 140px rgba(109, 20, 20, 0.4);
 }
 .hero__neon-glow {
   position: absolute;
@@ -511,8 +511,9 @@ html:not(.js) .preloader { animation: preloaderBail 0.5s 5s forwards; }
   z-index: 1;
   display: block;
   color: var(--neon);
-  filter: blur(20px);
-  opacity: 0.4;
+  filter: blur(30px);
+  transform: scale(1.04);
+  opacity: 0.3;
   pointer-events: none;
   user-select: none;
 }
