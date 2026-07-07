@@ -662,6 +662,15 @@ function initAnimations() {
     }
   );
 
+  /* ── Noir mode: floating chrome turns maroon while the hero is on screen ── */
+  ScrollTrigger.create({
+    trigger: ".hero",
+    /* hero sits at page top: "top top" would compute to 0 and never activate at scroll 0 */
+    start: "top bottom",
+    end: "bottom 70px",
+    onToggle: (self) => document.body.classList.toggle("is-noir", self.isActive),
+  });
+
   /* ── Dock: "now playing" tracking (functional — runs even with reduced motion) ── */
   TRACKS.forEach((t, i) => {
     ScrollTrigger.create({
