@@ -27,7 +27,8 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: var(--black); } /* canvas/overscroll/gutter paints black, not maroon */
+html.splash-lock { overflow: hidden; } /* full-screen event splash: no scrollbar gutter peeking through */
 html.lenis { scroll-behavior: auto; height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto; }
 
@@ -1211,6 +1212,209 @@ body.is-noir .progress-bar { background: var(--neon); }
 .footer__bottom nav { display: flex; gap: 1.6rem; }
 .footer__bottom nav a:hover { color: var(--gold); }
 
+/* ── Past runs: completed tag, dimmed rows ──────────── */
+.run--done .run__date { color: var(--cream-soft); }
+.run--done .run__name { color: var(--cream-soft); }
+.run__done {
+  flex-shrink: 0;
+  border: 1.5px solid var(--line);
+  color: var(--cream-soft);
+  border-radius: 999px;
+  padding: 0.55rem 1.3rem;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── Upcoming event: full-screen vinyl drop → cart ──── */
+.event-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: var(--black);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.event-splash[hidden] { display: none; }
+
+.event-splash__trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.event-splash__trail path {
+  stroke: var(--gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 9px rgba(245, 194, 27, 0.8));
+}
+
+.event-splash__record {
+  position: relative;
+  width: min(80vmin, 600px);
+  aspect-ratio: 1;
+  will-change: transform;
+}
+.event-splash__disc {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+/* off-centre sheen slivers make the spin visible */
+.event-splash__disc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    transparent 0deg, rgba(255, 255, 255, 0.055) 14deg, transparent 30deg,
+    transparent 176deg, rgba(255, 255, 255, 0.045) 196deg, transparent 214deg
+  );
+}
+.event-splash__label {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 47%;
+  height: 47%; /* explicit: content must never stretch the circle into an ellipse */
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 5px rgba(16, 13, 12, 0.6), 0 0 60px -10px rgba(245, 194, 27, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.3rem, 1vmin, 0.55rem);
+  text-align: center;
+  padding: 9%;
+  z-index: 2;
+}
+.event-splash__brand {
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 2.2vmin, 1.05rem);
+  letter-spacing: 0.22em;
+  color: var(--maroon-deep);
+}
+.event-splash__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.3rem, 5.2vmin, 2.5rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--maroon-deep);
+}
+.event-splash__hole {
+  width: clamp(8px, 1.6vmin, 12px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--black);
+  box-shadow: 0 0 0 4px var(--gold-deep);
+}
+.event-splash__sub {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(0.82rem, 2.5vmin, 1.15rem);
+  color: var(--maroon);
+}
+.event-splash__arm {
+  position: absolute;
+  top: -8%;
+  right: -5%;
+  width: 30%;
+  z-index: 3;
+  transform-origin: 80% 10.8%; /* pivot = counterweight circle centre */
+  will-change: transform;
+}
+.event-splash__arm line { stroke: var(--cream); stroke-width: 7; stroke-linecap: round; }
+.event-splash__arm circle { stroke: var(--cream); stroke-width: 7; fill: var(--black-soft); }
+.event-splash__arm rect { fill: var(--cream); }
+
+.event-splash__follow {
+  position: absolute;
+  bottom: clamp(4.4rem, 11vh, 7rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  color: var(--gold);
+  white-space: nowrap;
+}
+.event-splash__follow:hover { color: var(--cream); }
+.event-splash__skip {
+  position: absolute;
+  bottom: clamp(1.6rem, 5vh, 3rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cream-soft);
+  white-space: nowrap;
+}
+.event-splash__close {
+  position: absolute;
+  top: 1rem;
+  right: 1.4rem;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--cream);
+  font-size: 2.4rem;
+  line-height: 1;
+  font-family: inherit;
+  z-index: 4;
+}
+.event-splash__close:hover { color: var(--gold); }
+
+.event-cart {
+  position: fixed;
+  right: clamp(0.9rem, 2.5vw, 1.6rem);
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  z-index: 94;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  background: rgba(16, 13, 12, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 1.5rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 14px 34px -12px rgba(0, 0, 0, 0.75);
+  will-change: transform;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.event-cart[hidden] { display: none; }
+.event-cart:hover {
+  border-color: var(--cream);
+  box-shadow: 0 14px 34px -10px rgba(245, 194, 27, 0.25);
+}
+.event-cart__badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 21px;
+  height: 21px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--maroon-deep);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
 /* ── Responsive ─────────────────────────────────────── */
 @media (max-width: 899px) {
   .hero__foot p:last-child { display: none; }
@@ -1236,6 +1440,11 @@ body.is-noir .progress-bar { background: var(--neon); }
   .dock { gap: 0.55rem; padding: 0.5rem 0.55rem; }
   .dock__label { display: none; }
   .dock__disc { width: 40px; height: 40px; }
+
+  /* event splash: bigger label so the placeholder copy breathes on small discs */
+  .event-splash__record { width: min(88vmin, 600px); }
+  .event-splash__label { width: 56%; height: 56%; }
+  .event-cart { width: 52px; height: 52px; font-size: 1.35rem; }
 }
 
 /* ── Reduced motion ─────────────────────────────────── */

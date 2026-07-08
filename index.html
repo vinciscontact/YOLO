@@ -87,6 +87,36 @@
     <button class="lightbox__nav lightbox__nav--next" id="lbNext" aria-label="Next photo">›</button>
   </div>
 
+  <!-- ═══════════ UPCOMING EVENT — full-screen vinyl drop → cart ═══════════
+       Placeholder only: swap the label copy when the real event is announced. -->
+  <div class="event-splash" id="eventSplash" role="dialog" aria-modal="true" aria-label="Upcoming event" hidden>
+    <svg class="event-splash__trail" id="eventTrail" viewBox="0 0 100 100" aria-hidden="true">
+      <path id="eventTrailPath" d="" fill="none" />
+    </svg>
+    <div class="event-splash__record" id="eventRecord">
+      <div class="event-splash__disc vinyl" id="eventDisc" aria-hidden="true"></div>
+      <div class="event-splash__label">
+        <span class="event-splash__brand">YOLO.</span>
+        <strong class="event-splash__title">Upcoming<br />event</strong>
+        <span class="event-splash__hole" aria-hidden="true"></span>
+        <em class="event-splash__sub">details dropping soon</em>
+      </div>
+      <svg class="event-splash__arm" id="eventArm" viewBox="0 0 120 260" aria-hidden="true">
+        <line x1="96" y1="28" x2="52" y2="150" />
+        <line x1="52" y1="150" x2="40" y2="196" />
+        <circle cx="96" cy="28" r="14" />
+        <rect x="28" y="196" width="24" height="36" rx="7" />
+      </svg>
+    </div>
+    <a href="#" data-link="instagram" target="_blank" rel="noopener" class="event-splash__follow">Follow us for more →</a>
+    <p class="event-splash__skip">Tap anywhere to drop it in the cart</p>
+    <button class="event-splash__close" id="eventClose" aria-label="Close and save to cart">×</button>
+  </div>
+  <button class="event-cart" id="eventCart" aria-label="View upcoming event" hidden>
+    <span class="event-cart__emoji" aria-hidden="true">🛒</span>
+    <span class="event-cart__badge" aria-hidden="true">1</span>
+  </button>
+
   <main id="top">
 
     <!-- ═══════════ HERO — noir: black room, glowing maroon YOLO ═══════════ -->
@@ -476,34 +506,34 @@
       </div>
     </section>
 
-    <!-- ═══════════ UPCOMING RUNS — on tour ═══════════ -->
+    <!-- ═══════════ PAST RUNS — recently played ═══════════ -->
     <section class="runs" id="runs">
       <div class="runs__inner">
-        <p class="section-label reveal"><span class="gold-dot">●</span> On tour — catch us live</p>
-        <h2 class="h2" data-reveal="lines">Upcoming <em>runs.</em></h2>
+        <p class="section-label reveal"><span class="gold-dot">●</span> Recently played — the miles behind us</p>
+        <h2 class="h2" data-reveal="lines">Past <em>runs.</em></h2>
         <ol class="runs__list">
-          <li class="run reveal">
-            <span class="run__date"><strong>06</strong><span>Jul</span></span>
+          <li class="run run--done reveal">
+            <span class="run__date"><strong>07</strong><span>Jun</span></span>
             <span class="run__info"><span class="run__name">Sunrise 5K</span><span class="run__meta">Marina Beach · 6:00 AM · All levels</span></span>
-            <a href="#" data-link="join" target="_blank" rel="noopener" class="run__rsvp">RSVP</a>
+            <span class="run__done">✓ Done</span>
           </li>
-          <li class="run reveal">
-            <span class="run__date"><strong>12</strong><span>Jul</span></span>
+          <li class="run run--done reveal">
+            <span class="run__date"><strong>14</strong><span>Jun</span></span>
             <span class="run__info"><span class="run__name">Trail Tempo</span><span class="run__meta">Nanmangalam Forest · 6:30 AM · 8K</span></span>
-            <a href="#" data-link="join" target="_blank" rel="noopener" class="run__rsvp">RSVP</a>
+            <span class="run__done">✓ Done</span>
           </li>
-          <li class="run reveal">
-            <span class="run__date"><strong>19</strong><span>Jul</span></span>
+          <li class="run run--done reveal">
+            <span class="run__date"><strong>21</strong><span>Jun</span></span>
             <span class="run__info"><span class="run__name">Track Tuesday Special</span><span class="run__meta">Nehru Stadium · 5:45 AM · Intervals</span></span>
-            <a href="#" data-link="join" target="_blank" rel="noopener" class="run__rsvp">RSVP</a>
+            <span class="run__done">✓ Done</span>
           </li>
-          <li class="run reveal">
-            <span class="run__date"><strong>02</strong><span>Aug</span></span>
+          <li class="run run--done reveal">
+            <span class="run__date"><strong>05</strong><span>Jul</span></span>
             <span class="run__info"><span class="run__name">Long Run + Breakfast</span><span class="run__meta">ECR Loop · 5:30 AM · 10–15K</span></span>
-            <a href="#" data-link="join" target="_blank" rel="noopener" class="run__rsvp">RSVP</a>
+            <span class="run__done">✓ Done</span>
           </li>
         </ol>
-        <p class="runs__note reveal">New here? Just show up. Your first run is free — <em>they all are.</em></p>
+        <p class="runs__note reveal">Missed these? The next one is waiting in the cart — <em>tap the 🛒 at the bottom right.</em></p>
       </div>
     </section>
 

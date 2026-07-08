@@ -55,7 +55,7 @@ const TRACKS = [
   { sel: "#values",    no: "A4", title: "A4 · The Tracklist" },
   { sel: "#memories",  no: "B1", title: "B1 · Memories" },
   { sel: "#believe",   no: "B2", title: "B2 · Six Little Truths" },
-  { sel: "#runs",      no: "B3", title: "B3 · On Tour" },
+  { sel: "#runs",      no: "B3", title: "B3 · Past Runs" },
   { sel: "#join",      no: "B4", title: "B4 · Say Yes" },
 ];
 const dockList = document.getElementById("dockList");
@@ -192,6 +192,162 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") lbCloseFn();
   if (e.key === "ArrowLeft") lbShow(lbIdx - 1);
   if (e.key === "ArrowRight") lbShow(lbIdx + 1);
+});
+
+/* ── Upcoming event: full-screen vinyl drop → cart ────
+   A giant record fills the screen with "UPCOMING EVENT" as
+   its label; the needle drops, then the record revs up and
+   arcs into the 🛒 at bottom-right along a glowing gold
+   trail. Cart click brings it spinning back out. */
+const eventSplash = document.getElementById("eventSplash");
+const eventRecord = document.getElementById("eventRecord");
+const eventDisc = document.getElementById("eventDisc");
+const eventArm = document.getElementById("eventArm");
+const eventTrail = document.getElementById("eventTrail");
+const eventTrailPath = document.getElementById("eventTrailPath");
+const eventCart = document.getElementById("eventCart");
+const SPLASH_CHROME = [".event-splash__follow", ".event-splash__skip", ".event-splash__close"];
+let splashTimer = null;
+let splashTl = null;
+let discSpin = null;
+let cartDocked = false; // cart pop-in + auto-drop only on first showing
+
+/* record is grid-centred, so its resting centre = viewport centre */
+function cartOffset() {
+  const wasHidden = eventCart.hidden;
+  if (wasHidden) {
+    eventCart.hidden = false;
+    eventCart.style.visibility = "hidden";
+  }
+  const c = eventCart.getBoundingClientRect();
+  if (wasHidden) {
+    eventCart.hidden = true;
+    eventCart.style.visibility = "";
+  }
+  return {
+    x: c.left + c.width / 2 - window.innerWidth / 2,
+    y: c.top + c.height / 2 - window.innerHeight / 2,
+  };
+}
+
+function openEventSplash() {
+  if (!eventSplash.hidden) return;
+  clearTimeout(splashTimer);
+  eventSplash.hidden = false;
+  document.documentElement.classList.add("splash-lock");
+  if (prefersReduced) {
+    /* static: show the sign, make the cart available immediately */
+    eventCart.hidden = false;
+    cartDocked = true;
+    return;
+  }
+  if (lenis) lenis.stop();
+  if (!discSpin) discSpin = gsap.to(eventDisc, { rotation: "+=360", duration: 3.4, ease: "none", repeat: -1 });
+  discSpin.timeScale(1).play();
+
+  gsap.set(SPLASH_CHROME, { autoAlpha: 0 });
+  gsap.set(eventTrail, { autoAlpha: 0 });
+  gsap.set(eventSplash, { autoAlpha: 1, clearProps: "backgroundColor" });
+
+  splashTl = gsap.timeline({
+    onComplete: () => {
+      if (!cartDocked) splashTimer = setTimeout(flyToCart, 3200);
+    },
+  });
+  if (cartDocked) {
+    /* re-emerge: spin back out of the cart to centre stage */
+    const o = cartOffset();
+    splashTl
+      .fromTo(eventSplash, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 })
+      .fromTo(
+        eventRecord,
+        { x: o.x, y: o.y, scale: 0.04, autoAlpha: 0 },
+        { x: 0, y: 0, scale: 1, autoAlpha: 1, duration: 0.9, ease: "power3.out" },
+        0.05
+      );
+  } else {
+    splashTl
+      .fromTo(eventSplash, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.45 })
+      .fromTo(eventRecord, { scale: 0.5, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 1.1, ease: "back.out(1.3)" }, 0.1);
+  }
+  splashTl
+    /* needle drops onto the record, tiny settle wobble */
+    .fromTo(eventArm, { rotation: 26, autoAlpha: 1 }, { rotation: 0, duration: 0.7, ease: "power2.inOut" }, "-=0.45")
+    .to(eventArm, { rotation: 2.5, duration: 0.16, yoyo: true, repeat: 1, ease: "power1.inOut" })
+    .to(SPLASH_CHROME, { autoAlpha: 1, duration: 0.5, stagger: 0.08 }, "-=0.25");
+}
+
+function flyToCart() {
+  clearTimeout(splashTimer);
+  if (eventSplash.hidden) return;
+  if (splashTl) splashTl.kill();
+  const firstDock = !cartDocked;
+  cartDocked = true;
+  eventCart.hidden = false;
+  const finish = () => {
+    eventSplash.hidden = true;
+    document.documentElement.classList.remove("splash-lock");
+    gsap.set(eventSplash, { clearProps: "all" });
+    gsap.set([eventRecord, eventTrail], { clearProps: "all" });
+    if (discSpin) discSpin.timeScale(1).pause();
+    if (lenis) lenis.start();
+  };
+  if (prefersReduced) {
+    finish();
+    return;
+  }
+  gsap.killTweensOf([eventSplash, eventRecord, eventArm, eventCart, ...SPLASH_CHROME]);
+
+  /* quadratic arc from screen centre into the cart */
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const o = cartOffset();
+  const qx = o.x * 0.65;
+  const qy = Math.min(o.y * 0.2, -h * 0.18); /* rise before the swoop */
+  eventTrail.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  eventTrailPath.setAttribute(
+    "d",
+    `M ${w / 2} ${h / 2} Q ${w / 2 + qx} ${h / 2 + qy} ${w / 2 + o.x} ${h / 2 + o.y}`
+  );
+
+  if (discSpin) gsap.to(discSpin, { timeScale: 4, duration: 0.4 }); /* rev up */
+
+  const pos = { t: 0 };
+  splashTl = gsap.timeline({ onComplete: finish });
+  splashTl
+    .to(eventArm, { rotation: 26, autoAlpha: 0, duration: 0.35, ease: "power2.in" }, 0)
+    .to(SPLASH_CHROME, { autoAlpha: 0, duration: 0.25 }, 0);
+  if (firstDock) {
+    splashTl.fromTo(eventCart, { scale: 0, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.4, ease: "back.out(2)" }, 0.15);
+  }
+  splashTl
+    .set(eventTrail, { autoAlpha: 1 }, 0.3)
+    .fromTo(eventTrailPath, { drawSVG: "0% 0%" }, { drawSVG: "0% 100%", duration: 0.8, ease: "power2.in" }, 0.3)
+    .to(pos, {
+      t: 1,
+      duration: 0.85,
+      ease: "power2.in",
+      onUpdate: () => {
+        /* quadratic bezier: B(t) = 2(1-t)t·Q + t²·target (start = 0,0) */
+        const t = pos.t;
+        const u = 1 - t;
+        gsap.set(eventRecord, { x: 2 * u * t * qx + t * t * o.x, y: 2 * u * t * qy + t * t * o.y });
+      },
+    }, 0.32)
+    .to(eventRecord, { scale: 0.04, duration: 0.85, ease: "power2.in" }, 0.32)
+    .to(eventRecord, { autoAlpha: 0, duration: 0.15 }, 1.02)
+    .to(eventSplash, { backgroundColor: "rgba(16, 13, 12, 0)", duration: 0.5 }, 0.45)
+    .to(eventTrailPath, { drawSVG: "100% 100%", duration: 0.35, ease: "power2.out" }, 1.0)
+    /* the cart catches it — squash & bounce */
+    .to(eventCart, { scale: 1.32, duration: 0.14, ease: "power2.out" }, 1.08)
+    .to(eventCart, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" });
+}
+
+eventCart.addEventListener("click", openEventSplash);
+/* tap anywhere sends it to the cart (the follow link still opens first) */
+eventSplash.addEventListener("click", () => flyToCart());
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !eventSplash.hidden) flyToCart();
 });
 
 /* ── Magnetic buttons (fine pointers, motion allowed) ── */
@@ -729,7 +885,10 @@ function initAnimations() {
   window.addEventListener("load", () => ScrollTrigger.refresh());
 }
 
-/* ── Boot: fonts → preloader → animations ───────────── */
+/* ── Boot: fonts → preloader → animations → event splash ── */
 document.fonts.ready.then(() => {
-  runPreloader(initAnimations);
+  runPreloader(() => {
+    initAnimations();
+    setTimeout(openEventSplash, 1000); // let the hero land, then splash the upcoming event
+  });
 });
