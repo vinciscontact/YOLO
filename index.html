@@ -67,7 +67,7 @@
     <button class="dock__skip" id="dockNext" aria-label="Next section">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12 2.5v11M3 2.5 9.5 8 3 13.5z" /></svg>
     </button>
-    <button class="dock__skip dock__sound" id="dockSound" aria-label="Turn on vinyl crackle sound" aria-pressed="false">
+    <button class="dock__skip dock__sound" id="dockSound" aria-label="Turn on music" aria-pressed="false">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.6L9 13.2V2.8L4.6 6z" /><path class="snd-wave" d="M11.2 5.2q2.4 2.8 0 5.6" fill="none" /></svg>
     </button>
     <a href="#" data-link="join" target="_blank" rel="noopener" class="dock__join">Join</a>
@@ -116,6 +116,16 @@
     <span class="event-cart__emoji" aria-hidden="true">🛒</span>
     <span class="event-cart__badge" aria-hidden="true">1</span>
   </button>
+
+  <!-- ═══════════ SOUND PROMPT — one-time, after first scroll ═══════════ -->
+  <div class="sound-toast" id="soundToast" hidden>
+    <span class="sound-toast__disc" aria-hidden="true"></span>
+    <p class="sound-toast__msg">This record plays better with sound.</p>
+    <div class="sound-toast__actions">
+      <button class="sound-toast__yes" id="soundYes">Drop the needle</button>
+      <button class="sound-toast__no" id="soundNo">Maybe later</button>
+    </div>
+  </div>
 
   <main id="top">
 
@@ -179,82 +189,165 @@
       </div>
     </section>
 
-    <!-- ═══════════ STATS ═══════════ -->
+    <!-- ═══════════ STATS — RPM gauges ═══════════ -->
     <section class="stats" id="stats">
       <div class="stats__grid">
         <div class="stat">
-          <p class="stat__num"><span class="counter" data-target="1200">0</span><sup>+</sup></p>
+          <div class="stat__gauge">
+            <svg class="stat__dial" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="stat__ticks" cx="60" cy="60" r="54" />
+              <circle class="stat__arc" cx="60" cy="60" r="54" transform="rotate(-90 60 60)" data-sweep="82" />
+              <line class="stat__needle" x1="60" y1="60" x2="60" y2="12" data-angle="150" />
+            </svg>
+            <p class="stat__num"><span class="counter" data-target="1200">0</span><sup>+</sup></p>
+          </div>
           <p class="stat__label">Runners &amp; members</p>
         </div>
         <div class="stat">
-          <p class="stat__num"><span class="counter" data-target="150">0</span><sup>+</sup></p>
+          <div class="stat__gauge">
+            <svg class="stat__dial" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="stat__ticks" cx="60" cy="60" r="54" />
+              <circle class="stat__arc" cx="60" cy="60" r="54" transform="rotate(-90 60 60)" data-sweep="62" />
+              <line class="stat__needle" x1="60" y1="60" x2="60" y2="12" data-angle="98" />
+            </svg>
+            <p class="stat__num"><span class="counter" data-target="150">0</span><sup>+</sup></p>
+          </div>
           <p class="stat__label">Runs &amp; meetups hosted</p>
         </div>
         <div class="stat">
-          <p class="stat__num"><span class="counter" data-target="48000">0</span></p>
+          <div class="stat__gauge">
+            <svg class="stat__dial" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="stat__ticks" cx="60" cy="60" r="54" />
+              <circle class="stat__arc" cx="60" cy="60" r="54" transform="rotate(-90 60 60)" data-sweep="92" />
+              <line class="stat__needle" x1="60" y1="60" x2="60" y2="12" data-angle="170" />
+            </svg>
+            <p class="stat__num"><span class="counter" data-target="48000">0</span></p>
+          </div>
           <p class="stat__label">Kilometres run together</p>
         </div>
         <div class="stat">
-          <p class="stat__num"><span class="counter" data-target="1">0</span></p>
+          <div class="stat__gauge">
+            <svg class="stat__dial" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="stat__ticks" cx="60" cy="60" r="54" />
+              <circle class="stat__arc" cx="60" cy="60" r="54" transform="rotate(-90 60 60)" data-sweep="100" />
+              <line class="stat__needle" x1="60" y1="60" x2="60" y2="12" data-angle="180" />
+            </svg>
+            <p class="stat__num"><span class="counter" data-target="1">0</span></p>
+          </div>
           <p class="stat__label">Life. Make it count.</p>
         </div>
       </div>
+      <p class="stats__rpm reveal" aria-hidden="true">measured at 33⅓ revolutions per minute</p>
     </section>
 
-    <!-- ═══════════ VALUES — pinned horizontal scroll ═══════════ -->
+    <!-- ═══════════ VALUES — crate digging: flip through the records ═══════════ -->
     <section class="values" id="values">
       <div class="values__intro">
         <p class="section-label reveal"><span class="gold-dot">●</span> What YOLO stands for</p>
         <h2 class="h2" data-reveal="lines">Seven ways we make <em>every moment</em> count</h2>
-        <p class="values__hint reveal" aria-hidden="true">Keep scrolling — the tracklist moves sideways →</p>
+        <p class="values__hint reveal" aria-hidden="true">Keep scrolling — dig through the crate ↓</p>
       </div>
 
-      <div class="h-section">
-        <div class="h-track">
-          <article class="value-card">
-            <span class="value-card__num">TRACK 01</span>
-            <!-- DUMMY IMAGE -->
-            <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=900&auto=format&fit=crop" alt="Runner at dawn" />
-            <h3>Step out of your comfort zone</h3>
-            <p>Discover what you're truly capable of — one uncomfortable, unforgettable step at a time.</p>
-          </article>
-          <article class="value-card">
-            <span class="value-card__num">TRACK 02</span>
-            <img src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?q=80&w=900&auto=format&fit=crop" alt="Runner on open road" />
-            <h3>Build confidence</h3>
-            <p>Every challenge you overcome adds a layer of belief you carry into everything else.</p>
-          </article>
-          <article class="value-card">
-            <span class="value-card__num">TRACK 03</span>
-            <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=900&auto=format&fit=crop" alt="Team huddle before a run" />
-            <h3>Meet like-minded people</h3>
-            <p>Turn strangers into training partners, and training partners into lifelong friends.</p>
-          </article>
-          <article class="value-card">
-            <span class="value-card__num">TRACK 04</span>
-            <img src="https://images.unsplash.com/photo-1486218119243-13883505764c?q=80&w=900&auto=format&fit=crop" alt="Running shoes on track" />
-            <h3>Make fitness fun</h3>
-            <p>Exciting runs, workouts, games, sports and community events — sweat with a smile.</p>
-          </article>
-          <article class="value-card">
-            <span class="value-card__num">TRACK 05</span>
-            <img src="https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?q=80&w=900&auto=format&fit=crop" alt="Marathon crowd celebrating" />
-            <h3>Create unforgettable experiences</h3>
-            <p>The best memories are made together — at start lines, summits and finish-line hugs.</p>
-          </article>
-          <article class="value-card">
-            <span class="value-card__num">TRACK 06</span>
-            <img src="https://images.unsplash.com/photo-1530143584546-02191bc84eb5?q=80&w=900&auto=format&fit=crop" alt="Trail runner in nature" />
-            <h3>Progress, not perfection</h3>
-            <p>Every small step counts. Show up, stay consistent, get a little better every day.</p>
-          </article>
-          <article class="value-card">
-            <span class="value-card__num">TRACK 07</span>
-            <img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?q=80&w=900&auto=format&fit=crop" alt="Runner silhouette at sunset" />
-            <h3>Grow in every direction</h3>
-            <p>Physically, mentally, socially — while genuinely enjoying the journey.</p>
-          </article>
+      <div class="crate" id="crate">
+        <div class="crate__stage">
+          <div class="crate__stack" id="crateStack">
+            <article class="sleeve">
+              <span class="sleeve__vinyl vinyl" aria-hidden="true"><span class="vinyl__label vinyl__label--sm"><span></span></span></span>
+              <div class="sleeve__cover">
+                <span class="sleeve__num">TRACK 01</span>
+                <!-- DUMMY IMAGE -->
+                <img src="https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=900&auto=format&fit=crop" alt="Runner at dawn" />
+              </div>
+              <div class="sleeve__text">
+                <h3>Step out of your comfort zone</h3>
+                <p>Discover what you're truly capable of — one uncomfortable, unforgettable step at a time.</p>
+              </div>
+            </article>
+            <article class="sleeve">
+              <span class="sleeve__vinyl vinyl" aria-hidden="true"><span class="vinyl__label vinyl__label--sm"><span></span></span></span>
+              <div class="sleeve__cover">
+                <span class="sleeve__num">TRACK 02</span>
+                <img src="https://images.unsplash.com/photo-1571008887538-b36bb32f4571?q=80&w=900&auto=format&fit=crop" alt="Runner on open road" />
+              </div>
+              <div class="sleeve__text">
+                <h3>Build confidence</h3>
+                <p>Every challenge you overcome adds a layer of belief you carry into everything else.</p>
+              </div>
+            </article>
+            <article class="sleeve">
+              <span class="sleeve__vinyl vinyl" aria-hidden="true"><span class="vinyl__label vinyl__label--sm"><span></span></span></span>
+              <div class="sleeve__cover">
+                <span class="sleeve__num">TRACK 03</span>
+                <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=900&auto=format&fit=crop" alt="Team huddle before a run" />
+              </div>
+              <div class="sleeve__text">
+                <h3>Meet like-minded people</h3>
+                <p>Turn strangers into training partners, and training partners into lifelong friends.</p>
+              </div>
+            </article>
+            <article class="sleeve">
+              <span class="sleeve__vinyl vinyl" aria-hidden="true"><span class="vinyl__label vinyl__label--sm"><span></span></span></span>
+              <div class="sleeve__cover">
+                <span class="sleeve__num">TRACK 04</span>
+                <img src="https://images.unsplash.com/photo-1486218119243-13883505764c?q=80&w=900&auto=format&fit=crop" alt="Running shoes on track" />
+              </div>
+              <div class="sleeve__text">
+                <h3>Make fitness fun</h3>
+                <p>Exciting runs, workouts, games, sports and community events — sweat with a smile.</p>
+              </div>
+            </article>
+            <article class="sleeve">
+              <span class="sleeve__vinyl vinyl" aria-hidden="true"><span class="vinyl__label vinyl__label--sm"><span></span></span></span>
+              <div class="sleeve__cover">
+                <span class="sleeve__num">TRACK 05</span>
+                <img src="https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?q=80&w=900&auto=format&fit=crop" alt="Marathon crowd celebrating" />
+              </div>
+              <div class="sleeve__text">
+                <h3>Create unforgettable experiences</h3>
+                <p>The best memories are made together — at start lines, summits and finish-line hugs.</p>
+              </div>
+            </article>
+            <article class="sleeve">
+              <span class="sleeve__vinyl vinyl" aria-hidden="true"><span class="vinyl__label vinyl__label--sm"><span></span></span></span>
+              <div class="sleeve__cover">
+                <span class="sleeve__num">TRACK 06</span>
+                <img src="https://images.unsplash.com/photo-1530143584546-02191bc84eb5?q=80&w=900&auto=format&fit=crop" alt="Trail runner in nature" />
+              </div>
+              <div class="sleeve__text">
+                <h3>Progress, not perfection</h3>
+                <p>Every small step counts. Show up, stay consistent, get a little better every day.</p>
+              </div>
+            </article>
+            <article class="sleeve">
+              <span class="sleeve__vinyl vinyl" aria-hidden="true"><span class="vinyl__label vinyl__label--sm"><span></span></span></span>
+              <div class="sleeve__cover">
+                <span class="sleeve__num">TRACK 07</span>
+                <img src="https://images.unsplash.com/photo-1517963879433-6ad2b056d712?q=80&w=900&auto=format&fit=crop" alt="Runner silhouette at sunset" />
+              </div>
+              <div class="sleeve__text">
+                <h3>Grow in every direction</h3>
+                <p>Physically, mentally, socially — while genuinely enjoying the journey.</p>
+              </div>
+            </article>
+          </div>
+          <p class="crate__counter" aria-hidden="true"><span id="crateNow">01</span> / 07</p>
         </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ THE FLIP — side A becomes side B ═══════════ -->
+    <section class="flip" id="flip" aria-label="Flip the record">
+      <div class="flip__stage">
+        <p class="flip__word flip__word--a" aria-hidden="true">SIDE&nbsp;A</p>
+        <p class="flip__word flip__word--b" aria-hidden="true">SIDE&nbsp;B</p>
+        <div class="flip__disc-wrap">
+          <div class="flip__record" id="flipRecord">
+            <div class="flip__face flip__face--a vinyl"><div class="vinyl__label"><span>SIDE A</span></div></div>
+            <div class="flip__face flip__face--b vinyl"><div class="vinyl__label"><span>SIDE B</span></div></div>
+          </div>
+          <div class="flip__sheen" aria-hidden="true"><span></span></div>
+        </div>
+        <p class="flip__caption"><em>Flip the record —</em> the memories are on the other side.</p>
       </div>
     </section>
 
@@ -504,6 +597,23 @@
 
         </div>
       </div>
+    </section>
+
+    <!-- ═══════════ INTERLUDE — grooves of type (infinite counter-marquees) ═══════════
+         Each line holds its content TWICE; xPercent −50 loops seamlessly. -->
+    <section class="interlude" aria-hidden="true">
+      <p class="interlude__line interlude__line--1">
+        <span>RUN&nbsp;·&nbsp;SWEAT&nbsp;·&nbsp;REPEAT&nbsp;·&nbsp;RUN&nbsp;·&nbsp;SWEAT&nbsp;·&nbsp;REPEAT&nbsp;·&nbsp;RUN&nbsp;·&nbsp;SWEAT&nbsp;·&nbsp;REPEAT&nbsp;·&nbsp;</span>
+        <span>RUN&nbsp;·&nbsp;SWEAT&nbsp;·&nbsp;REPEAT&nbsp;·&nbsp;RUN&nbsp;·&nbsp;SWEAT&nbsp;·&nbsp;REPEAT&nbsp;·&nbsp;RUN&nbsp;·&nbsp;SWEAT&nbsp;·&nbsp;REPEAT&nbsp;·&nbsp;</span>
+      </p>
+      <p class="interlude__line interlude__line--2">
+        <span>ONE&nbsp;LIFE&nbsp;·&nbsp;ONE&nbsp;CREW&nbsp;·&nbsp;ONE&nbsp;LIFE&nbsp;·&nbsp;ONE&nbsp;CREW&nbsp;·&nbsp;ONE&nbsp;LIFE&nbsp;·&nbsp;ONE&nbsp;CREW&nbsp;·&nbsp;</span>
+        <span>ONE&nbsp;LIFE&nbsp;·&nbsp;ONE&nbsp;CREW&nbsp;·&nbsp;ONE&nbsp;LIFE&nbsp;·&nbsp;ONE&nbsp;CREW&nbsp;·&nbsp;ONE&nbsp;LIFE&nbsp;·&nbsp;ONE&nbsp;CREW&nbsp;·&nbsp;</span>
+      </p>
+      <p class="interlude__line interlude__line--3">
+        <span>SAY&nbsp;YES&nbsp;·&nbsp;SHOW&nbsp;UP&nbsp;·&nbsp;SAY&nbsp;YES&nbsp;·&nbsp;SHOW&nbsp;UP&nbsp;·&nbsp;SAY&nbsp;YES&nbsp;·&nbsp;SHOW&nbsp;UP&nbsp;·&nbsp;</span>
+        <span>SAY&nbsp;YES&nbsp;·&nbsp;SHOW&nbsp;UP&nbsp;·&nbsp;SAY&nbsp;YES&nbsp;·&nbsp;SHOW&nbsp;UP&nbsp;·&nbsp;SAY&nbsp;YES&nbsp;·&nbsp;SHOW&nbsp;UP&nbsp;·&nbsp;</span>
+      </p>
     </section>
 
     <!-- ═══════════ PAST RUNS — recently played ═══════════ -->

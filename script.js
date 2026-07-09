@@ -5,6 +5,16 @@
 
 document.documentElement.classList.add("js"); // disables the no-JS preloader bail
 
+/* A refresh always restarts the record from the top — side A, track 1.
+   Set manual ASAP, then re-assert around the browser's async restore points. */
+history.scrollRestoration = "manual";
+window.scrollTo(0, 0);
+window.addEventListener("pageshow", () => {
+  history.scrollRestoration = "manual";
+  window.scrollTo(0, 0);
+  if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+});
+
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin);
 gsap.defaults({ ease: "power3.out", duration: 0.8 });
 
@@ -30,7 +40,7 @@ document.querySelectorAll("[data-link]").forEach((a) => {
 });
 
 /* Perf: below-the-fold imagery loads lazily */
-document.querySelectorAll(".value-card img, .reel-card img, .wall__item img").forEach((img) => {
+document.querySelectorAll(".sleeve img, .reel-card img, .wall__item img").forEach((img) => {
   img.loading = "lazy";
   img.decoding = "async";
 });
@@ -52,7 +62,8 @@ const TRACKS = [
   { sel: ".hero",      no: "A1", title: "A1 · You Only Live Once" },
   { sel: "#manifesto", no: "A2", title: "A2 · The Manifesto" },
   { sel: "#stats",     no: "A3", title: "A3 · Score Figures" },
-  { sel: "#values",    no: "A4", title: "A4 · The Tracklist" },
+  { sel: "#values",    no: "A4", title: "A4 · The Crate" },
+  { sel: "#flip",      no: "↻",  title: "↻ · Flip the Record" },
   { sel: "#memories",  no: "B1", title: "B1 · Memories" },
   { sel: "#believe",   no: "B2", title: "B2 · Six Little Truths" },
   { sel: "#runs",      no: "B3", title: "B3 · Past Runs" },
@@ -91,7 +102,7 @@ function toggleDockList() {
 TRACKS.forEach((t, i) => {
   const btn = document.createElement("button");
   btn.className = "dock__track";
-  btn.innerHTML = `<span class="dock__track-no">${t.no}</span>${t.title.slice(5)}`;
+  btn.innerHTML = `<span class="dock__track-no">${t.no}</span>${t.title.replace(/^.*?· /, "")}`;
   btn.addEventListener("click", () => {
     closeDockList();
     scrollToTrack(i);
@@ -367,8 +378,14 @@ if (!prefersReduced && window.matchMedia("(hover: hover) and (pointer: fine)").m
   });
 }
 
-/* ── Vinyl crackle — synthesized, no audio files, off by default ── */
+/* ── Sound: the record on the platter + vinyl crackle bed ──
+   "LET ME DRIVE FUNK.mp3" is the actual music; the synthesized
+   crackle sits quietly underneath it like surface noise. */
 const soundBtn = document.getElementById("dockSound");
+const music = new Audio("LET%20ME%20DRIVE%20FUNK.mp3");
+music.loop = true;
+music.volume = 0.6;
+music.preload = "none"; // ~1.2MB — only fetched once the user opts in
 let audioCtx = null;
 let soundOn = false;
 
@@ -391,7 +408,7 @@ function startCrackle() {
   src.buffer = buf;
   src.loop = true;
   const gain = audioCtx.createGain();
-  gain.gain.value = 0.5;
+  gain.gain.value = 0.22; /* ducked under the music — just surface noise */
   src.connect(gain).connect(audioCtx.destination);
   src.start();
 }
@@ -400,12 +417,14 @@ soundBtn.addEventListener("click", async () => {
   if (soundOn) {
     if (!audioCtx) startCrackle();
     else await audioCtx.resume();
-  } else if (audioCtx) {
-    await audioCtx.suspend();
+    music.play().catch(() => {}); /* needle down — the funk starts */
+  } else {
+    if (audioCtx) await audioCtx.suspend();
+    music.pause();
   }
   soundBtn.classList.toggle("is-on", soundOn);
   soundBtn.setAttribute("aria-pressed", String(soundOn));
-  soundBtn.setAttribute("aria-label", soundOn ? "Turn off vinyl crackle sound" : "Turn on vinyl crackle sound");
+  soundBtn.setAttribute("aria-label", soundOn ? "Turn off music" : "Turn on music");
 });
 function blip() {
   if (!soundOn || !audioCtx) return;
@@ -421,6 +440,96 @@ function blip() {
 }
 document.getElementById("dockPrev").addEventListener("click", blip);
 document.getElementById("dockNext").addEventListener("click", blip);
+
+/* Needle-drop pop — low thump + dusty tick when the "track" changes */
+function needlePop() {
+  if (!soundOn || !audioCtx) return;
+  const t = audioCtx.currentTime;
+  const o = audioCtx.createOscillator();
+  const og = audioCtx.createGain();
+  o.type = "sine";
+  o.frequency.setValueAtTime(90, t);
+  o.frequency.exponentialRampToValueAtTime(48, t + 0.12);
+  og.gain.setValueAtTime(0.28, t);
+  og.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+  o.connect(og).connect(audioCtx.destination);
+  o.start(t);
+  o.stop(t + 0.18);
+  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.05, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) * 0.3;
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const f = audioCtx.createBiquadFilter();
+  f.type = "lowpass";
+  f.frequency.value = 1600;
+  src.connect(f).connect(audioCtx.destination);
+  src.start(t + 0.01);
+}
+
+/* Scratch — filtered noise sweep when the user really rips the scroll */
+let lastScratch = 0;
+function scratch() {
+  if (!soundOn || !audioCtx) return;
+  const now = performance.now();
+  if (now - lastScratch < 900) return;
+  lastScratch = now;
+  const t = audioCtx.currentTime;
+  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.16, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const f = audioCtx.createBiquadFilter();
+  f.type = "bandpass";
+  f.Q.value = 2.5;
+  f.frequency.setValueAtTime(420, t);
+  f.frequency.exponentialRampToValueAtTime(2400, t + 0.14);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.12, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+  src.connect(f).connect(g).connect(audioCtx.destination);
+  src.start(t);
+}
+
+/* One-time sound prompt after the first real scroll */
+const SOUND_KEY = "yolo-sound";
+const soundToast = document.getElementById("soundToast");
+
+function hideSoundToast() {
+  gsap.to(soundToast, {
+    y: 60,
+    autoAlpha: 0,
+    duration: 0.4,
+    ease: "power2.in",
+    onComplete: () => {
+      soundToast.hidden = true;
+      gsap.set(soundToast, { clearProps: "all" });
+    },
+  });
+}
+document.getElementById("soundYes").addEventListener("click", () => {
+  localStorage.setItem(SOUND_KEY, "on");
+  if (!soundOn) soundBtn.click();
+  hideSoundToast();
+});
+document.getElementById("soundNo").addEventListener("click", () => {
+  localStorage.setItem(SOUND_KEY, "off");
+  hideSoundToast();
+});
+if (!localStorage.getItem(SOUND_KEY)) {
+  ScrollTrigger.create({
+    start: 420,
+    once: true,
+    onEnter: () => {
+      soundToast.hidden = false;
+      gsap.from(soundToast, { y: 80, autoAlpha: 0, duration: 0.7, ease: "power3.out" });
+    },
+  });
+} else if (localStorage.getItem(SOUND_KEY) === "on") {
+  /* returning visitor said yes before — start on their first gesture (autoplay policy) */
+  window.addEventListener("pointerdown", () => { if (!soundOn) soundBtn.click(); }, { once: true });
+}
 
 /* ── Custom cursor (fine pointers, motion allowed) ──── */
 if (!prefersReduced && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
@@ -439,7 +548,7 @@ if (!prefersReduced && window.matchMedia("(hover: hover) and (pointer: fine)").m
   });
   const grow = () => gsap.to(cursor, { scale: 3.2, duration: 0.35 });
   const shrink = () => gsap.to(cursor, { scale: 1, duration: 0.35 });
-  document.querySelectorAll("a, button, .wall__item, .reel-card, .value-card, .doodle-card").forEach((el) => {
+  document.querySelectorAll("a, button, .wall__item, .reel-card, .sleeve, .doodle-card").forEach((el) => {
     el.addEventListener("mouseenter", grow);
     el.addEventListener("mouseleave", shrink);
   });
@@ -508,6 +617,8 @@ function initAnimations() {
         document.querySelectorAll(".counter").forEach((c) => {
           c.textContent = Number(c.dataset.target).toLocaleString("en-IN");
         });
+        document.querySelectorAll(".stat__arc").forEach((arc) => gsap.set(arc, { drawSVG: arc.dataset.sweep + "%" }));
+        document.querySelectorAll(".stat__needle").forEach((n) => gsap.set(n, { rotation: parseFloat(n.dataset.angle), svgOrigin: "60 60" }));
         return;
       }
 
@@ -664,31 +775,96 @@ function initAnimations() {
         scrollTrigger: { trigger: ".stats", start: "top 82%", toggleActions: "play none none reverse" },
       });
 
-      /* ── Values: horizontal scroll (desktop) / batch reveal (mobile) ── */
-      if (isDesktop) {
-        const track = document.querySelector(".h-track");
-        const getScroll = () => track.scrollWidth - window.innerWidth;
-        gsap.to(track, {
-          x: () => -getScroll(),
-          ease: "none",
+      /* RPM gauges: arc draws around the dial, needle winds up with the count */
+      document.querySelectorAll(".stat__arc").forEach((arc, i) => {
+        gsap.fromTo(arc, { drawSVG: "0%" }, {
+          drawSVG: arc.dataset.sweep + "%",
+          duration: 2,
+          ease: "power2.out",
+          delay: i * 0.12,
+          scrollTrigger: { trigger: ".stats", start: "top 80%", toggleActions: "play none none none" },
+        });
+      });
+      document.querySelectorAll(".stat__needle").forEach((needle, i) => {
+        gsap.fromTo(needle, { rotation: -20, svgOrigin: "60 60" }, {
+          rotation: parseFloat(needle.dataset.angle),
+          duration: 2.1,
+          ease: "back.out(1.3)",
+          delay: i * 0.12,
+          scrollTrigger: { trigger: ".stats", start: "top 80%", toggleActions: "play none none none" },
+        });
+      });
+
+      /* ── Values: crate digging (desktop pin) / list reveal (mobile) ──
+         Each value is a record sleeve in a crate; scrolling tips the front
+         sleeve forward and the next one rises, like a collector digging. */
+      const crate = document.getElementById("crate");
+      const sleeves = gsap.utils.toArray(".sleeve");
+      if (isDesktop && crate && sleeves.length) {
+        crate.classList.add("crate--live");
+        const crateNow = document.getElementById("crateNow");
+        const N = sleeves.length;
+        sleeves.forEach((s, i) => {
+          gsap.set(s, {
+            zIndex: N - i,
+            transformOrigin: "50% 100%",
+            ...(i > 0 ? { scale: 0.92, yPercent: 5, autoAlpha: i === 1 ? 0.45 : 0 } : {}),
+          });
+          /* the vinyl peeks out of the active sleeve */
+          gsap.set(s.querySelector(".sleeve__vinyl"), { y: i === 0 ? -26 : 0 });
+        });
+        const crateTl = gsap.timeline({
           scrollTrigger: {
-            trigger: ".h-section",
-            pin: true,
-            scrub: 1,
+            trigger: crate,
             start: "top top",
-            end: () => "+=" + getScroll(),
-            invalidateOnRefresh: true,
+            end: "+=" + (N - 1) * 85 + "%",
+            scrub: 1,
+            pin: true,
             anticipatePin: 1,
+            onUpdate: (self) => {
+              const idx = Math.min(N - 1, Math.round(self.progress * (N - 1)));
+              crateNow.textContent = String(idx + 1).padStart(2, "0");
+            },
           },
         });
+        for (let i = 0; i < N - 1; i++) {
+          crateTl
+            .to(sleeves[i].querySelector(".sleeve__vinyl"), { y: 0, duration: 0.25, ease: "none" })
+            .to(sleeves[i], { rotationX: -68, yPercent: 18, autoAlpha: 0, duration: 1, ease: "power2.in" }, "<")
+            .to(sleeves[i + 1], { scale: 1, yPercent: 0, autoAlpha: 1, duration: 1, ease: "power2.out" }, "<")
+            .to(sleeves[i + 1].querySelector(".sleeve__vinyl"), { y: -26, duration: 0.35, ease: "power2.out" }, "<0.55");
+          if (i + 2 < N) crateTl.to(sleeves[i + 2], { autoAlpha: 0.45, duration: 0.4, ease: "none" }, "<0.3");
+        }
       } else {
-        gsap.set(".value-card", { autoAlpha: 0, y: 50 });
-        ScrollTrigger.batch(".value-card", {
+        if (crate) crate.classList.remove("crate--live"); /* back to plain list below 900px */
+        gsap.set(".sleeve", { autoAlpha: 0, y: 50 });
+        ScrollTrigger.batch(".sleeve", {
           start: "top 88%",
           onEnter: (batch) =>
             gsap.to(batch, { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, overwrite: true }),
         });
       }
+
+      /* ── THE FLIP: side A → side B, scrubbed record flip ── */
+      gsap.set("#flipRecord", { rotationX: 10 });
+      const flipTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".flip",
+          start: "top top",
+          end: "+=220%",
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1,
+        },
+      });
+      flipTl
+        .to("#flipRecord", { rotationY: 180, duration: 2, ease: "none" }, 0)
+        .to("#flipRecord", { scale: 1.12, duration: 1, ease: "power1.in" }, 0)
+        .to("#flipRecord", { scale: 1, duration: 1, ease: "power1.out" }, 1)
+        .fromTo(".flip__sheen span", { xPercent: -160 }, { xPercent: 160, duration: 1.1, ease: "none" }, 0.45)
+        .to(".flip__word--a", { xPercent: -22, autoAlpha: 0, duration: 0.9, ease: "none" }, 0.3)
+        .fromTo(".flip__word--b", { xPercent: 22, autoAlpha: 0 }, { xPercent: 0, autoAlpha: 1, duration: 0.9, ease: "none" }, 1.05)
+        .from(".flip__caption", { autoAlpha: 0, y: 30, duration: 0.45 }, 1.55);
 
       /* ── Memories reel: cards slide in + subtle drift; skew on velocity ── */
       gsap.set(".reel-card", { autoAlpha: 0, x: 90 });
@@ -717,6 +893,19 @@ function initAnimations() {
         onEnter: (batch) =>
           gsap.to(batch, { autoAlpha: 1, y: 0, stagger: 0.08, duration: 0.9, overwrite: true }),
       });
+      /* contact sheet: each frame develops (B&W → colour) as it passes centre stage */
+      gsap.utils.toArray(".wall__item img").forEach((img) => {
+        gsap.fromTo(
+          img,
+          { filter: "grayscale(1) brightness(0.72) contrast(1.05)" },
+          {
+            filter: "grayscale(0) brightness(1) contrast(1)",
+            ease: "none",
+            scrollTrigger: { trigger: img, start: "top 85%", end: "top 45%", scrub: true },
+          }
+        );
+      });
+
       const skewSetter = gsap.quickTo(".wall__item img", "skewY", { duration: 0.4, ease: "power3" });
       ScrollTrigger.create({
         trigger: ".wall",
@@ -728,12 +917,16 @@ function initAnimations() {
         },
       });
 
-      /* ── Doodle story cards: settle in, sketch themselves, then act ── */
-      document.querySelectorAll(".doodle-card").forEach((card) => {
+      /* ── Doodle story cards: slapped onto the corkboard ──
+         Each card flies in oversized from off-angle like a tossed polaroid,
+         lands with an elastic squash, the tape smacks down AFTER it lands,
+         then the doodle sketches itself in. */
+      document.querySelectorAll(".doodle-card").forEach((card, i) => {
         const tilt = parseFloat(card.dataset.tilt) || 0;
         const strokes = card.querySelectorAll("svg path, svg circle, svg ellipse");
         const notes = card.querySelectorAll("svg text");
-        gsap.set(card, { rotation: tilt });
+        const fromX = (i % 3 - 1) * 130; /* column decides the toss direction: left / above / right */
+        gsap.set(card, { rotation: tilt, transformPerspective: 700 });
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -743,15 +936,40 @@ function initAnimations() {
           },
         });
         tl.from(card, {
-          y: 80,
+          x: fromX,
+          y: 150,
+          rotation: tilt * 8 + (i % 2 ? 14 : -14),
+          scale: 1.35,
           autoAlpha: 0,
-          rotation: tilt * 5,
-          duration: 0.9,
-          ease: "back.out(1.4)",
-        });
-        if (strokes.length) tl.from(strokes, { drawSVG: "0%", duration: 0.7, stagger: 0.035, ease: "power2.inOut" }, "-=0.45");
+          duration: 0.6,
+          ease: "power3.out",
+        })
+          /* impact squash… */
+          .to(card, { scaleX: 1.06, scaleY: 0.94, duration: 0.1, ease: "power2.out" }, "-=0.05")
+          /* …and elastic settle onto its resting tilt */
+          .to(card, { scaleX: 1, scaleY: 1, rotation: tilt, duration: 0.85, ease: "elastic.out(1.1, 0.4)" })
+          /* tape slaps down once the card has landed */
+          .from(card, { "--tape-s": 2.6, "--tape-o": 0, duration: 0.32, ease: "back.out(2.6)" }, "-=0.7");
+        if (strokes.length) tl.from(strokes, { drawSVG: "0%", duration: 0.7, stagger: 0.035, ease: "power2.inOut" }, "-=0.55");
         if (notes.length) tl.from(notes, { autoAlpha: 0, duration: 0.4 }, "-=0.2");
       });
+
+      /* the wall is tactile: cards tilt in 3D toward the cursor (desktop only) */
+      if (isDesktop) {
+        document.querySelectorAll(".doodle-card").forEach((card) => {
+          const rxTo = gsap.quickTo(card, "rotationX", { duration: 0.5, ease: "power3" });
+          const ryTo = gsap.quickTo(card, "rotationY", { duration: 0.5, ease: "power3" });
+          card.addEventListener("mousemove", (e) => {
+            const r = card.getBoundingClientRect();
+            ryTo(((e.clientX - r.left) / r.width - 0.5) * 14);
+            rxTo(((e.clientY - r.top) / r.height - 0.5) * -14);
+          });
+          card.addEventListener("mouseleave", () => {
+            rxTo(0);
+            ryTo(0);
+          });
+        });
+      }
 
       /* Loop animators for the stick people (data-attribute driven):
          data-swing  — limb pendulum (run cycle), rotates ±value around data-origin
@@ -795,6 +1013,37 @@ function initAnimations() {
         });
       });
 
+      /* ── Interlude: infinite counter-marquees — the grooves never stop ──
+         Outlined lines run left, the gold line runs right; scrolling hard
+         revs them up like spinning the platter by hand. */
+      const interludeTweens = gsap.utils.toArray(".interlude__line").map((line, i) => {
+        const rightward = i === 1; /* the gold middle line runs the other way */
+        const dur = [34, 26, 30][i]; /* slightly different speeds = organic */
+        return gsap.fromTo(
+          line,
+          { xPercent: rightward ? -50 : 0 },
+          { xPercent: rightward ? 0 : -50, duration: dur, ease: "none", repeat: -1, paused: true }
+        );
+      });
+      /* scratch the type when the user scrolls hard */
+      const interludeSkew = gsap.quickTo(".interlude__line", "skewX", { duration: 0.5, ease: "power3" });
+      ScrollTrigger.create({
+        trigger: ".interlude",
+        start: "top bottom",
+        end: "bottom top",
+        /* only spend frames on it while it's on screen */
+        onToggle: (self) => interludeTweens.forEach((tw) => (self.isActive ? tw.play() : tw.pause())),
+        onUpdate: (self) => {
+          const boost = 1 + Math.abs(gsap.utils.clamp(-3, 3, self.getVelocity() / 400));
+          interludeTweens.forEach((tw) => {
+            tw.timeScale(boost);
+            gsap.to(tw, { timeScale: 1, duration: 0.8, overwrite: true });
+          });
+          interludeSkew(gsap.utils.clamp(-8, 8, self.getVelocity() / -350));
+          gsap.delayedCall(0.15, () => interludeSkew(0));
+        },
+      });
+
       /* ── CTA: giant lines rise ── */
       gsap.from(".cta__line", {
         yPercent: 105,
@@ -835,6 +1084,7 @@ function initAnimations() {
       end: "bottom 35%",
       onToggle: (self) => {
         if (self.isActive) {
+          if (activeTrack !== i) needlePop(); /* the needle skips to the next track */
           activeTrack = i;
           dockTitle.textContent = t.title;
         }
@@ -858,6 +1108,7 @@ function initAnimations() {
       end: "max",
       onUpdate: (self) => {
         const v = gsap.utils.clamp(0, 5, Math.abs(self.getVelocity()) / 500);
+        if (v > 3.6) scratch(); /* ripping the scroll = scratching the record */
         discSpin.timeScale(1 + v);
         gsap.to(discSpin, { timeScale: 1, duration: 0.8, overwrite: true });
         if (neonGlow) {
