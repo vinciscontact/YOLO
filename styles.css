@@ -27,7 +27,7 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { scroll-behavior: smooth; background: var(--black); } /* canvas/overscroll/gutter paints black, not maroon */
+html { scroll-behavior: smooth; background: var(--black); overflow-x: clip; } /* clip kills sideways panning from transformed elements on touch */
 html.splash-lock { overflow: hidden; } /* full-screen event splash: no scrollbar gutter peeking through */
 html.lenis { scroll-behavior: auto; height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto; }
@@ -440,27 +440,6 @@ body.is-noir .progress-bar { background: var(--neon); }
     radial-gradient(58% 44% at 50% 46%, rgba(109, 20, 20, 0.28), transparent 68%),
     var(--black);
 }
-/* Centered backdrop stage — the record turns behind the sign */
-.hero__stage {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  z-index: 1;
-  pointer-events: none;
-}
-.hero__vinyl {
-  width: min(64vh, 78vw, 720px);
-  will-change: transform;
-  opacity: 0.9;
-}
-.hero__vinyl .vinyl__label { background: var(--maroon); }
-.hero__vinyl .vinyl__label span {
-  font-size: clamp(0.8rem, 1.4vw, 1.2rem);
-  transform: translateY(-150%);
-  color: var(--black);
-}
-
 .hero__head {
   position: relative;
   z-index: 2;
@@ -557,12 +536,6 @@ body.is-noir .progress-bar { background: var(--neon); }
 .hero__subline .gold-dot { color: var(--neon); }
 
 /* Two-color discipline: every hero control lives in maroon/black */
-.hero__vinyl.vinyl {
-  box-shadow:
-    0 24px 80px -20px rgba(0, 0, 0, 0.85),
-    0 0 90px -14px rgba(109, 20, 20, 0.55),
-    inset 0 0 0 1px rgba(168, 35, 28, 0.14);
-}
 .hero .btn--gold { background: var(--maroon); color: #f0d9d4; }
 .hero .btn--gold:hover { background: var(--neon); color: var(--black); }
 .hero .btn--ghost { border-color: rgba(168, 35, 28, 0.65); color: var(--maroon-pale); }
@@ -839,6 +812,7 @@ body.is-noir .progress-bar { background: var(--neon); }
 .crate--live { padding: 0 var(--pad-x); }
 .crate--live .crate__stage {
   height: 100vh;
+  height: 100svh; /* stable on mobile while the URL bar shows/hides */
   display: grid;
   place-items: center;
 }
@@ -874,6 +848,7 @@ body.is-noir .progress-bar { background: var(--neon); }
 .flip__stage {
   position: relative;
   height: 100vh;
+  height: 100svh; /* stable on mobile while the URL bar shows/hides */
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -1085,6 +1060,9 @@ body.is-noir .progress-bar { background: var(--neon); }
 .believe {
   background: var(--maroon);
   padding: var(--section-y) var(--pad-x);
+  /* cards wait off-angle (±130px, 135%) for the polaroid toss — clip so
+     their pre-entrance overhang can't widen the page on touch devices */
+  overflow-x: clip;
 }
 .believe__inner { max-width: 72rem; margin: 0 auto; }
 /* Doodle story cards — hand-drawn stick-figure scenes */
@@ -1616,6 +1594,17 @@ body.is-noir .progress-bar { background: var(--neon); }
   border-color: var(--cream);
   box-shadow: 0 14px 34px -10px rgba(245, 194, 27, 0.25);
 }
+.event-cart__emoji {
+  display: grid;
+  place-items: center;
+}
+.event-cart__emoji svg {
+  width: 27px;
+  stroke: var(--cream);
+  stroke-width: 1.7;
+  transition: stroke 0.3s;
+}
+.event-cart:hover .event-cart__emoji svg { stroke: var(--gold); }
 .event-cart__badge {
   position: absolute;
   top: -5px;
@@ -1886,7 +1875,8 @@ body.is-noir .progress-bar { background: var(--neon); }
   /* event splash: bigger label so the placeholder copy breathes on small discs */
   .event-splash__record { width: min(88vmin, 600px); }
   .event-splash__label { width: 56%; height: 56%; }
-  .event-cart { width: 52px; height: 52px; font-size: 1.35rem; }
+  .event-cart { width: 52px; height: 52px; }
+  .event-cart__emoji svg { width: 23px; }
 
   /* crate dig on phones: slimmer stack, shorter pin */
   .crate--live .crate__stack { width: min(340px, 88vw); height: min(70vh, 560px); }

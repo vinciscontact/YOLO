@@ -17,6 +17,9 @@ window.addEventListener("pageshow", () => {
 
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin);
 gsap.defaults({ ease: "power3.out", duration: 0.8 });
+/* mobile browsers fire resize when the URL bar collapses — recalculating
+   pins mid-scroll makes the page lurch; ignore those, keep real rotations */
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -682,11 +685,7 @@ function initAnimations() {
           onComplete: () => gsap.set(heroSplit.chars, { clearProps: "willChange" }),
         })
         .from(".hero__eyebrow", { y: 24, autoAlpha: 0, duration: 0.7 }, "-=0.9")
-        .from(".hero__vinyl", { scale: 0.86, autoAlpha: 0, duration: 1.6, ease: "power3.out" }, "-=1.1")
         .from(".hero__foot", { autoAlpha: 0, duration: 0.7 }, "-=0.5");
-
-      /* The hero record never stops spinning */
-      gsap.to(".hero__vinyl", { rotation: 360, duration: 26, ease: "none", repeat: -1 });
 
       /* Mouse-parallax depth on the whole collage (desktop only, after entrance) */
       if (isDesktop) {
