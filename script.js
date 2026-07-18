@@ -31,12 +31,41 @@ if (!prefersReduced && typeof Lenis !== "undefined") {
 
 /* ── Club links — ONE place to update when real URLs arrive ── */
 const LINKS = {
-  join: "https://chat.whatsapp.com/REPLACE_WITH_REAL_INVITE", // TODO: club's WhatsApp group invite
+  join: "https://chat.whatsapp.com/LpUTXWos2mDB8Ml8j8INHX?s=cl&p=a&ilr=1", // YOLO WhatsApp group
   instagram: "https://instagram.com/yolo.runclub",            // TODO: real handle
   strava: "https://www.strava.com/clubs/yolo-runclub",        // TODO: real club page
 };
 document.querySelectorAll("[data-link]").forEach((a) => {
   a.href = LINKS[a.dataset.link] || "#";
+});
+
+/* ── Runners & members counter grows with every join click ──
+   Static site: each visitor's WhatsApp join adds +1 locally
+   (persisted), so the number they watched climb includes them. */
+const JOIN_KEY = "yolo-joins";
+const BASE_RUNNERS = 334; /* real member count — joins add on top */
+const runnersEl = document.querySelector(".counter"); /* first counter = runners & members */
+const joinsSoFar = parseInt(localStorage.getItem(JOIN_KEY) || "0", 10);
+runnersEl.dataset.target = BASE_RUNNERS + joinsSoFar;
+
+document.querySelectorAll('[data-link="join"]').forEach((a) => {
+  a.addEventListener("click", (e) => {
+    const n = parseInt(localStorage.getItem(JOIN_KEY) || "0", 10) + 1;
+    localStorage.setItem(JOIN_KEY, n);
+    const target = BASE_RUNNERS + n;
+    runnersEl.dataset.target = target;
+    /* if the count-up already played, tick the displayed number up too */
+    const shown = parseInt(runnersEl.textContent.replace(/[^\d]/g, ""), 10) || 0;
+    if (shown >= BASE_RUNNERS) runnersEl.textContent = target.toLocaleString("en-IN");
+    /* gold "+1" floats off the button they clicked */
+    const plus = document.createElement("span");
+    plus.className = "join-plus";
+    plus.textContent = "+1 🏃";
+    document.body.appendChild(plus);
+    const r = a.getBoundingClientRect();
+    gsap.set(plus, { x: r.left + r.width / 2, y: r.top - 6 });
+    gsap.to(plus, { y: "-=70", autoAlpha: 0, duration: 1.1, ease: "power1.out", onComplete: () => plus.remove() });
+  });
 });
 
 /* Perf: below-the-fold imagery loads lazily */
@@ -66,8 +95,11 @@ const TRACKS = [
   { sel: "#flip",      no: "↻",  title: "↻ · Flip the Record" },
   { sel: "#memories",  no: "B1", title: "B1 · Memories" },
   { sel: "#believe",   no: "B2", title: "B2 · Six Little Truths" },
-  { sel: "#runs",      no: "B3", title: "B3 · Past Runs" },
-  { sel: "#join",      no: "B4", title: "B4 · Say Yes" },
+  { sel: "#founders",  no: "B3", title: "B3 · The Founders" },
+  { sel: "#crew",      no: "B4", title: "B4 · The Core Crew" },
+  { sel: "#reviews",   no: "B5", title: "B5 · The Reviews" },
+  { sel: "#runs",      no: "B6", title: "B6 · Past Runs" },
+  { sel: "#join",      no: "B7", title: "B7 · Say Yes" },
 ];
 const dockList = document.getElementById("dockList");
 const dockTitle = document.getElementById("dockTitle");
@@ -494,9 +526,12 @@ function scratch() {
 
 /* One-time sound prompt after the first real scroll */
 const SOUND_KEY = "yolo-sound";
+const SNOOZE_KEY = "yolo-sound-snooze"; /* session-only: dismissed toast stays away until next visit */
 const soundToast = document.getElementById("soundToast");
+let soundToastTimer = null;
 
 function hideSoundToast() {
+  clearTimeout(soundToastTimer);
   gsap.to(soundToast, {
     y: 60,
     autoAlpha: 0,
@@ -522,8 +557,17 @@ if (!localStorage.getItem(SOUND_KEY)) {
     start: 420,
     once: true,
     onEnter: () => {
+      if (sessionStorage.getItem(SNOOZE_KEY)) return;
+      /* prefetch the track NOW so "Drop the needle" plays instantly, not after a download */
+      music.preload = "auto";
+      music.load();
       soundToast.hidden = false;
       gsap.from(soundToast, { y: 80, autoAlpha: 0, duration: 0.7, ease: "power3.out" });
+      /* don't nag: if ignored, slide away after 12s (re-offers on the next visit) */
+      soundToastTimer = setTimeout(() => {
+        sessionStorage.setItem(SNOOZE_KEY, "1");
+        hideSoundToast();
+      }, 12000);
     },
   });
 } else if (localStorage.getItem(SOUND_KEY) === "on") {
@@ -548,7 +592,7 @@ if (!prefersReduced && window.matchMedia("(hover: hover) and (pointer: fine)").m
   });
   const grow = () => gsap.to(cursor, { scale: 3.2, duration: 0.35 });
   const shrink = () => gsap.to(cursor, { scale: 1, duration: 0.35 });
-  document.querySelectorAll("a, button, .wall__item, .reel-card, .sleeve, .doodle-card").forEach((el) => {
+  document.querySelectorAll("a, button, .wall__item, .reel-card, .sleeve, .doodle-card, .founder, .crew__card, .review-card").forEach((el) => {
     el.addEventListener("mouseenter", grow);
     el.addEventListener("mouseleave", shrink);
   });
@@ -800,7 +844,7 @@ function initAnimations() {
          sleeve forward and the next one rises, like a collector digging. */
       const crate = document.getElementById("crate");
       const sleeves = gsap.utils.toArray(".sleeve");
-      if (isDesktop && crate && sleeves.length) {
+      if (crate && sleeves.length) { /* the dig runs on every screen size */
         crate.classList.add("crate--live");
         const crateNow = document.getElementById("crateNow");
         const N = sleeves.length;
@@ -835,14 +879,6 @@ function initAnimations() {
             .to(sleeves[i + 1].querySelector(".sleeve__vinyl"), { y: -26, duration: 0.35, ease: "power2.out" }, "<0.55");
           if (i + 2 < N) crateTl.to(sleeves[i + 2], { autoAlpha: 0.45, duration: 0.4, ease: "none" }, "<0.3");
         }
-      } else {
-        if (crate) crate.classList.remove("crate--live"); /* back to plain list below 900px */
-        gsap.set(".sleeve", { autoAlpha: 0, y: 50 });
-        ScrollTrigger.batch(".sleeve", {
-          start: "top 88%",
-          onEnter: (batch) =>
-            gsap.to(batch, { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.8, overwrite: true }),
-        });
       }
 
       /* ── THE FLIP: side A → side B, scrubbed record flip ── */
