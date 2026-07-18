@@ -414,13 +414,13 @@ if (!prefersReduced && window.matchMedia("(hover: hover) and (pointer: fine)").m
 }
 
 /* ── Sound: the record on the platter + vinyl crackle bed ──
-   "LET ME DRIVE FUNK.mp3" is the actual music; the synthesized
-   crackle sits quietly underneath it like surface noise. */
+   "music.mp3" is the actual music; the synthesized crackle
+   sits quietly underneath it like surface noise. */
 const soundBtn = document.getElementById("dockSound");
-const music = new Audio("LET%20ME%20DRIVE%20FUNK.mp3");
+const music = new Audio("music.mp3");
 music.loop = true;
 music.volume = 0.6;
-music.preload = "none"; // ~1.2MB — only fetched once the user opts in
+music.preload = "none"; // ~0.3MB — only fetched once the user opts in
 let audioCtx = null;
 let soundOn = false;
 
